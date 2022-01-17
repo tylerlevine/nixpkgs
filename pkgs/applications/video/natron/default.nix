@@ -1,24 +1,15 @@
-{ lib, stdenv, fetchurl, qt4, pkg-config, boost, expat, cairo, python2Packages,
-  cmake, flex, bison, pango, librsvg, librevenge, libxml2, libcdr, libzip,
+{ lib, stdenv, fetchurl, qt4, pkg-config, boost, expat, cairo, python3,
+  cmake, flex, bison, pango, librsvg, librevenge, libxml2, libcdr, libzip, seexpr,
   poppler, imagemagick, openexr, ffmpeg, opencolorio_1, openimageio,
   qmake4Hook, libpng, libGL, lndir, libraw, openjpeg, libwebp, fetchFromGitHub }:
 
 let
-  minorVersion = "2.4";
-  version = "${minorVersion}.0";
-  OpenColorIO-Configs = fetchurl {
-    url = "https://github.com/NatronGitHub/OpenColorIO-Configs/archive/Natron-v${minorVersion}.tar.gz";
-    sha256 = "sha256-MvHC+U2KMdTj+FXl6e8nF4cseHO0p06x6sKYYvunPSw=";
-  };
-  seexpr = stdenv.mkDerivation rec {
-    version = "1.0.1";
-    pname = "seexpr";
-    src = fetchurl {
-      url = "https://github.com/wdas/SeExpr/archive/rel-${version}.tar.gz";
-      sha256 = "sha256-lx7o//frGVeFAx3t18Bss/qGSfuoqkXGrOdGojuAk6k=";
-    };
-    nativeBuildInputs = [ cmake ];
-    buildInputs = [ libpng flex bison ];
+  version = "2.4.2";
+  OpenColorIO-Configs = fetchFromGitHub {
+    owner = "NatronGitHub";
+    repo = "OpenColorIO-Configs";
+    rev = "Natron-v${lib.versions.majorMinor version}";
+    sha256 = "0yylscspmxz7djixg98v7qrw1mdgpzwj44h6wpx7x7mapxbwa4p2";
   };
   buildPlugin = { pluginName, sha256, nativeBuildInputs ? [], buildInputs ? [], preConfigure ? "", postPatch ? "" }:
     stdenv.mkDerivation {
@@ -32,25 +23,16 @@ let
         inherit sha256;
       };
       inherit nativeBuildInputs buildInputs postPatch;
-      preConfigure = ''
-        makeFlagsArray+=("CONFIG=release")
-        makeFlagsArray+=("PLUGINPATH=$out/Plugins/OFX/Natron")
-        ${preConfigure}
-      '';
+
+      makeFlags = [
+        "CONFIG=release"
+        "PLUGINPATH=${placeholder "out"}/Plugins/OFX/Natron"
+      ];
     };
-  cimgversion = "89b9d062ec472df3d33989e6d5d2a8b50ba0775c";
-  CImgh = fetchurl {
-    url = "https://raw.githubusercontent.com/dtschump/CImg/${cimgversion}/CImg.h";
-    sha256 = "sha256-NbYpZDNj2oZ+wqoEkRwwCjiujdr+iGOLA0Pa0Ynso6U=";
-  };
-  inpainth = fetchurl {
-    url = "https://raw.githubusercontent.com/dtschump/CImg/${cimgversion}/plugins/inpaint.h";
-    sha256 = "sha256-cd28a3VOs5002GkthHkbIUrxZfKuGhqIYO4Oxe/2HIQ=";
-  };
   plugins = map buildPlugin [
     ({
       pluginName = "arena";
-      sha256 = "sha256-fAXQyYnLbFYqwKmkwHSoOGa/0cruHJbf2QLMsttiarM=";
+      sha256 = "1jnmnpka5n1a9qc8dqcsmhzbyv5s4f09cdlzws8cj7w1z45k3mbr";
       nativeBuildInputs = [ pkg-config ];
       buildInputs = [
         pango librsvg librevenge libcdr opencolorio_1 libxml2 libzip
@@ -62,7 +44,7 @@ let
     })
     ({
       pluginName = "io";
-      sha256 = "sha256-tt+G2YqHQn8vPdiWtRYuOF3ffz9Qo19oD8Z9DsTDvQQ=";
+      sha256 = "0mgb7r6lw5nbwfnywz8shxxia3xbfngwd24nki8s0vadjac8j7xm";
       nativeBuildInputs = [ pkg-config ];
       buildInputs = [
         libpng ffmpeg openexr opencolorio_1 openimageio boost libGL
@@ -71,15 +53,10 @@ let
     })
     ({
       pluginName = "misc";
-      sha256 = "sha256-xKhlXSsjaSkoKq3IdAG89N8oCI6SihHJpji6Jh2bx/8=";
+      sha256 = "19in8jicc7xmafx2i70rrlq67k2h07swhbd2l3qivn05v0411h2s";
       buildInputs = [
         libGL
       ];
-      postPatch = ''
-        cp '${inpainth}' CImg/Inpaint/inpaint.h
-        patch -p0 -dCImg < CImg/Inpaint/inpaint.h.patch # taken from the Makefile; it gets skipped if the file already exists
-        cp '${CImgh}' CImg/CImg.h
-      '';
     })
   ];
 in
@@ -92,20 +69,19 @@ stdenv.mkDerivation {
     repo = "Natron";
     rev = "v${version}";
     fetchSubmodules = true;
-    sha256 = "sha256-YPfkS19cxLH2a3YXjmUgAlPzHeQHgEDPFdXCI3wVoQs=";
+    sha256 = "0h99pfy4jx8604s55090138sg59zd80l0hlppm6l9bjch83awf61";
   };
 
-  nativeBuildInputs = [ qmake4Hook pkg-config python2Packages.wrapPython ];
+  nativeBuildInputs = [ qmake4Hook pkg-config python3.pkgs.wrapPython ];
 
   buildInputs = [
-    qt4 boost expat cairo python2Packages.pyside python2Packages.pysideShiboken
+    qt4 boost expat cairo python3.pkgs.pyside python3.pkgs.pysideShiboken
   ];
 
   preConfigure = ''
     export MAKEFLAGS=-j$NIX_BUILD_CORES
     cp ${./config.pri} config.pri
-    mkdir OpenColorIO-Configs
-    tar -xf ${OpenColorIO-Configs} --strip-components=1 -C OpenColorIO-Configs
+    cp -R ${OpenColorIO-Configs}/. OpenColorIO-Configs
   '';
 
   postFixup = ''
