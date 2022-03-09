@@ -320,6 +320,7 @@ mapAliases ({
   fedora-coreos-config-transpiler = throw "fedora-coreos-config-transpiler has been renamed to 'butane'."; # Added 2021-04-13
   fetchFromGithub = throw "You meant fetchFromGitHub, with a capital H.";
   ffadoFull = throw "'ffadoFull' has been renamed to/replaced by 'ffado'"; # Converted to throw 2022-02-22
+  ffmpeg_3 = throw "ffmpeg_3 was removed from nixpkgs, because it was an outdated and insecure release."; # added 2022-01-17
   firefox-esr-68 = throw "Firefox 68 ESR was removed because it reached end of life with its final release 68.12esr on 2020-08-25.";
   firefox-esr-wrapper = throw "'firefox-esr-wrapper' has been renamed to/replaced by 'firefox-esr'"; # Converted to throw 2022-02-22
   firefoxWrapper = throw "'firefoxWrapper' has been renamed to/replaced by 'firefox'"; # Converted to throw 2022-02-22
@@ -339,7 +340,6 @@ mapAliases ({
   fme = throw "fme was removed, because it is old and uses Glade, a discontinued library."; # Added 2022-01-26
   foldingathome = fahclient; # Added 2020-09-03
   font-awesome-ttf = throw "'font-awesome-ttf' has been renamed to/replaced by 'font-awesome'"; # Converted to throw 2022-02-22
-
   fontconfig-ultimate = throw ''
     fontconfig-ultimate has been removed. The repository has been archived upstream and activity has ceased for several years.
     https://github.com/bohoomil/fontconfig-ultimate/issues/171.
