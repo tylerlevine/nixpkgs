@@ -194,7 +194,7 @@ let
       cp -R . $out/Applications/Slack.app
     '' + lib.optionalString (!stdenv.isAarch64) ''
       # on aarch64-darwin we get: Could not write domain com.tinyspeck.slackmacgap; exiting
-      /usr/bin/defaults write com.tinyspeck.slackmacgap SlackNoAutoUpdates -Bool YES
+      /usr/bin/defaults write com.tinyspeck.slackmacgap SlackNoAutoUpdates -bool YES
     '' + ''
       runHook postInstall
     '';
